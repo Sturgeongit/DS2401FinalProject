@@ -90,15 +90,8 @@ write.csv(new_movies, "filtered_movies.csv")
 
 ```
 ```{r}
-by_genre <- new_movies %>% group_by(Genre) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration) )
-head(by_genre)
-n = nrow(new_movies)
+
 new_movies$time_increment = 0
-head(new_movies)
-# for (i in 1:n) {
-# if (new_movies$duration[i] < 60)
-#   {  time_increment[i] = "Under 1 Hour" }
-# }
 
 new_movies$time_increment[new_movies$duration <= 60] = 60
 new_movies$time_increment[new_movies$duration > 60 & new_movies$duration <= 75] = 75
@@ -111,19 +104,26 @@ new_movies$time_increment[new_movies$duration > 240 & new_movies$duration <= 300
 new_movies$time_increment[new_movies$duration > 300 & new_movies$duration <= 360] = 360
 new_movies$time_increment[new_movies$duration > 360 & new_movies$duration <= 420] = 420
 
+new_movies %>% group_by(time_increment) %>% 
+  summarise (count = n()) %>%
+  ggplot(aes(x = time_increment, y = count)) + geom_col()
 
-by_genre <- new_movies %>% group_by(Genre) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration) )
-
-
-new_movies %>% group_by(time_increment) %>% summarise (count = n())
+new_movies %>% group_by(time_increment) %>% 
+  summarise (count = n()) %>%
+  ggplot(aes(x = time_increment, y = count)) + geom_col() +
+  coord_cartesian(ylim=c(0,800))
 
 
 
 
 ```
-```{r fig.align="center", echo = FALSE,fig.width = 20, fig.height = 5}
-genre_only <- new_movies %>% group_by(Genre, time_increment) %>% summarise(count = n())
 
+##Run Time of Movies in Each Genre, 
+
+```{r fig.align="center", echo = FALSE,fig.width = 20, fig.height = 5}
+##Run Time of Movies in Each Genre, 
+
+genre_only <- new_movies %>% group_by(Genre, time_increment) %>% summarise(count = n())
 genre_only %>% ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment))) +
   geom_col(position = "fill") + 
   scale_fill_brewer(palette="Paired", name = "Runtime",
@@ -134,5 +134,33 @@ genre_only %>% ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment
   labs(y = "Percent of Movies", title = "Proportion of Movies\nby Time and Genre\n") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
+Let's take a look at the longest and shortest movies
+```{r fig.width = 12, fig.height = 4}
+longest = nrow(new_movies)
+tenth_longest = longest-10
+longest
+tenth_longest
+new_movies %>%
+  arrange(duration) %>% 
+  slice(1:10) %>%
+  select(original_title, duration, Genre) %>%
+  ggplot(aes(x = original_title, y = duration, fill = Genre)) +
+  geom_col() +
+  coord_cartesian(ylim=c(20,60)) + 
+  coord_flip()
+
+new_movies %>%
+  arrange(duration) %>% 
+  slice(tenth_longest:longest) %>% 
+  select(original_title, duration, Genre) %>%
+  ggplot(aes(x = original_title, y = duration, fill = Genre)) +
+  geom_col() +
+  coord_flip()
+
+
+```
+
+
+
 
 
