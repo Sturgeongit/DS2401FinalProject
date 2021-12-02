@@ -145,6 +145,7 @@ new_movies %>%
   slice(1:10) %>%
   select(original_title, duration, Genre) %>%
   ggplot(aes(x = original_title, y = duration, fill = Genre)) +
+  scale_fill_brewer(palette = "Paired") +
   geom_col() +
   coord_cartesian(ylim=c(20,60)) + 
   coord_flip()
@@ -154,12 +155,62 @@ new_movies %>%
   slice(tenth_longest:longest) %>% 
   select(original_title, duration, Genre) %>%
   ggplot(aes(x = original_title, y = duration, fill = Genre)) +
+  scale_fill_brewer(palette = "Paired") +
   geom_col() +
   coord_flip()
 
 
 ```
 
+##BOX PLOT!!!
+```{r fig.width = 20, fig.height = 12}
+
+##Good plot
+new_movies %>% ggplot(aes(x = as.factor(Genre), y = duration, fill = Genre)) + 
+  geom_boxplot() +
+  scale_fill_brewer(palette = "Paired") + 
+  coord_cartesian(ylim=c(20,150))
+
+#Not Good Plot
+new_movies %>% ggplot(aes(x = as.factor(year), y = duration, fill = as.factor(year))) + 
+  geom_boxplot(shape = "circle") +
+  coord_cartesian(ylim=c(20,150)) 
+
+
+```
+```{r}
+
+new_movies %>% group_by(year, Genre) %>% 
+  summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
+head(new_movies)
+mean_runtime %>% ggplot(aes(x = year, y = avgRunTime, color = Genre)) + 
+  geom_line() + 
+  scale_fill_brewer(palette = "Paired") + 
+  facet_wrap(~Genre) +
+  coord_cartesian(ylim=c(40,125)) 
+
+
+new_movies %>% group_by(year) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
+
+```
+```{r}
+
+over_2 <- new_movies %>% filter(duration > 120) %>% group_by(year) %>% summarise(count = n()) 
+total_count <- new_movies %>% group_by(year) %>% summarise(count = n())
+over_2$pct <- round((over_2$count/total_count$count) * 100, 1)
+
+
+over_2
+total_count
+
+over_2 %>% ggplot(aes(x = year, y = count)) +
+  geom_col()
+over_2 %>% ggplot(aes(x = year, y = pct)) +
+  geom_col()
+
+new_movies
+
+```
 
 
 
