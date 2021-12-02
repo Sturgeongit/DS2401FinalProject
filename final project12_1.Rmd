@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = FALSE)
 ??? Alfred Hitchcock
 "No good movie is too long and no bad movie is short enough."
 ??? Roger Ebert
+![Hitchcock](hitchcock.jpg)
 
 ```{r}
 library(tidyverse)
@@ -212,6 +213,12 @@ new_movies
 
 ```
 
+Would you think that the length of a movie might affect how well it's loved by the public? Let's look at the data. 
 
+```{r}
 
+```
+
+The data shows that most movies, regardless of rating, sit in the sweet spot of  around 90 minutes, regardless of genre, and are liked based on quality, not quantity
+![Ebert](ebert.jpg)
 
