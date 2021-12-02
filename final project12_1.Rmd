@@ -130,9 +130,9 @@ genre_only %>% ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment
                     breaks = c("60", "75", "90", "120", "150", "180", "240", "300", "360", 
                                "420"),
                     labels = c("Under 1:00", "1:00 to 1:15", "1:15 to 1:30", "1:30 to 2:00", "2:00 to 2:30", "2:30 to 3:00", "3:00 to 4:00", "4:00 to 5:00", "5:00 to 6:00", "6:00 to 7:00" )) +
-  coord_flip()
-
-  #labels(y = "Total Movies", main = "Number of Movies by Time and Genre")
+  coord_flip() +
+  labs(y = "Percent of Movies", title = "Proportion of Movies\nby Time and Genre\n") +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
 
 
