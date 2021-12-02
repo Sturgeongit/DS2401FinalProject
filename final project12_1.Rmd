@@ -1,0 +1,132 @@
+---
+title: ""
+author: "Alison Bradburn, Cristy Limones, Ashle Markey"
+date: "11/15/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+"The length of a film should be directly related to the endurance of the human bladder."
+??? Alfred Hitchcock
+"No good movie is too long and no bad movie is short enough."
+??? Roger Ebert
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+all_movies <- read.csv("IMDbmovies.csv")
+ 
+head(all_movies)
+
+all_movies$year <- as.integer(all_movies$year)
+ 
+movies <- all_movies %>% filter(year >= 1980, country == "USA") %>%
+    select(original_title, year, genre, duration, votes, country)
+movies
+ 
+write.csv(movies, "movies.csv")
+ 
+```
+
+
+```{r}
+
+
+
+
+head(movies)
+
+by_genre <- movies %>% group_by(genre) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration) )
+by_genre
+
+movies %>% filter(genre == "Action") %>%
+  summarise(maxRunTime = max(duration), avgRunTime = mean(duration))
+
+```
+Now we need to categorize each complex sub-genre into one of nine major genres. We will start by using a for loop and "startswith"
+
+```{r}
+
+
+movies$subgenre <- str_split(movies$genre, "[,]", simplify = TRUE) [,1]
+
+
+movie_genre <- movies$subgenre
+
+no_animation <- gsub("Animation", "Family", movie_genre)
+no_bio <- gsub("Biography", "Drama", no_animation)
+no_mystery <- gsub("Mystery", "Crime", no_bio)
+no_thriller <- gsub("Thriller", "Horror", no_mystery)
+no_fantasy <- gsub("Fantasy", "Sci-fi/fantasy", no_thriller)
+no_scifi <- gsub("Sci-Fi", "Sci-fi/fantasy", no_fantasy)
+no_action <- gsub("Action", "Action/adventure", no_scifi)
+no_music <- gsub("Musical", "music", no_action)
+no_adventure <- gsub("Adventure", "Action/adventure", no_music)
+no_sport <- gsub("Sport", "Drama", no_adventure)
+no_history <- gsub("History", "Drama", no_sport)
+no_music <- gsub("Music", "music", no_history)
+action <- gsub("Action/adventure", "Action/Adventure", no_music)
+music <- gsub("music", "Musical", action)
+
+fixed_movies <- gsub("Sci-fi/fantasy", "Sci-Fi/Fantasy", music)
+
+
+
+unique(fixed_movies)
+movies$Genre <- fixed_movies
+movies
+
+new_movies <- movies %>% filter(Genre != "Documentary") %>% select(original_title, year, Genre, duration, votes)
+#unique(new_movies$Genre)
+new_movies %>% arrange(desc(duration))
+
+write.csv(new_movies, "filtered_movies.csv")
+
+```
+```{r}
+by_genre <- new_movies %>% group_by(Genre) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration) )
+by_genre
+n = nrow(new_movies)
+new_movies$time_increment = 0
+head(new_movies)
+# for (i in 1:n) {
+# if (new_movies$duration[i] < 60)
+#   {  time_increment[i] = "Under 1 Hour" }
+# }
+
+new_movies$time_increment[new_movies$duration <= 60] = 60
+new_movies$time_increment[new_movies$duration > 60 & new_movies$duration <= 75] = 75
+new_movies$time_increment[new_movies$duration > 75 & new_movies$duration <= 90] = 90
+new_movies$time_increment[new_movies$duration > 90 & new_movies$duration <= 120] = 120
+new_movies$time_increment[new_movies$duration > 120 & new_movies$duration <= 150] = 150
+new_movies$time_increment[new_movies$duration > 150 & new_movies$duration <= 180] = 180
+new_movies$time_increment[new_movies$duration > 180 & new_movies$duration <= 240] = 240
+new_movies$time_increment[new_movies$duration > 240 & new_movies$duration <= 300] = 300
+new_movies$time_increment[new_movies$duration > 300 & new_movies$duration <= 360] = 360
+new_movies$time_increment[new_movies$duration > 360 & new_movies$duration <= 420] = 420
+
+
+by_genre <- new_movies %>% group_by(Genre) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration) )
+by_genre
+
+new_movies %>% group_by(time_increment) %>% summarise (count = n())
+
+new_movies %>% filter(votes < 200)
+
+
+```
+```{r}
+movies_by_genre <- new_movies %>% group_by(Genre, time_increment) %>% summarise(count = n())
+movies_by_genre
+####scatter plot from test
+genre_only %>% ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment))) +
+ geom_col(position = "fill") 
+  #labels(y = "Total Movies", main = "Number of Movies by Time and Genre")
+```
+
+
