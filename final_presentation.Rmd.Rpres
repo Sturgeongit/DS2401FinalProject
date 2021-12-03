@@ -1,0 +1,47 @@
+
+Are Movies Too LONG? 
+========================================================
+
+author: Alison Bradburn, Cristy Limones, Ashle Markey
+date: December 6, 2021
+autosize: true
+
+Or is your attention span S        H        R       I      N     K    I   NG?
+========================================================
+![Hitchcock](hitchcock.jpg)
+
+
+Our Dataset
+========================================================
+
+```{r echo = FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+
+all_movies <- read.csv("IMDbmovies.csv")
+ 
+glimpse(all_movies)
+
+all_movies$year <- as.integer(all_movies$year)
+ 
+movies <- all_movies %>% filter(year >= 1980, country == "USA") %>%
+    select(original_title, year, genre, duration, votes, country)
+```
+Our Cleaned Data
+
+```{r echo = FALSE}
+glimpse(movies)
+
+```
+*data from IMDb, via Kaggle
+
+Average Movie Times
+========================================================
+
+```{r, echo=FALSE}
+
+
+
+```
