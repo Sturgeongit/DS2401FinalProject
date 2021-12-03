@@ -2,12 +2,13 @@
 title: ""
 author: "Alison Bradburn, Cristy Limones, Ashle Markey"
 date: "11/15/2021"
-output: html_document
+output: slidy_presentation
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
+## quotes
 
 "The length of a film should be directly related to the endurance of the human bladder."
 ??? Alfred Hitchcock
@@ -19,8 +20,15 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(RColorBrewer)
+```
 
-all_movies <- read.csv("IMDbmovies.csv")
+
+```{r}
+#cristy
+all_movies <- read.csv("/Users/cristyreynolds/Desktop/DataScience2401/Final_Project/IMDbmovies.csv", stringsAsFactors = FALSE) 
+
+#allisons 
+#all_movies <- read.csv("IMDbmovies.csv")
  
 head(all_movies)
 
@@ -36,9 +44,6 @@ write.csv(movies, "movies.csv")
 
 
 ```{r}
-
-
-
 
 head(movies)
 
@@ -178,21 +183,33 @@ new_movies %>% ggplot(aes(x = as.factor(year), y = duration, fill = as.factor(ye
 
 
 ```
+
+
 ```{r}
 
 new_movies %>% group_by(year, Genre) %>% 
   summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
-head(new_movies)
-mean_runtime %>% ggplot(aes(x = year, y = avgRunTime, color = Genre)) + 
-  geom_line() + 
-  scale_fill_brewer(palette = "Paired") + 
-  facet_wrap(~Genre) +
-  coord_cartesian(ylim=c(40,125)) 
+```
 
+```{r}
+head(new_movies)
+```
+Wasnt sure what your were trying to do here
+```{r}
+#mean_runtime %>% ggplot(aes(x = year, y = avgRunTime, color = Genre)) + 
+  #geom_line() + 
+  #scale_fill_brewer(palette = "Paired") + 
+  #facet_wrap(~Genre) +
+  #coord_cartesian(ylim=c(40,125)) 
+```
+
+```{r}
 
 new_movies %>% group_by(year) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
 
 ```
+
+
 ```{r}
 
 over_2 <- new_movies %>% filter(duration > 120) %>% group_by(year) %>% summarise(count = n()) 
