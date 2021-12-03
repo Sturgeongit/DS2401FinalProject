@@ -1,5 +1,5 @@
 ---
-title: ""
+title: "Movie Runtimes"
 author: "Alison Bradburn, Cristy Limones, Ashle Markey"
 date: "11/15/2021"
 output: slidy_presentation
@@ -8,14 +8,13 @@ output: slidy_presentation
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
-## quotes
+## Quotes
 
-"The length of a film should be directly related to the endurance of the human bladder."
-??? Alfred Hitchcock
-"No good movie is too long and no bad movie is short enough."
-??? Roger Ebert
-![Hitchcock](hitchcock.jpg)
+- "The length of a film should be directly related to the endurance of the human bladder."-Alfred Hitchcock
+- "No good movie is too long and no bad movie is short enough."-Roger Ebert
 
+
+# Installed Packages
 ```{r}
 library(tidyverse)
 library(dplyr)
@@ -23,8 +22,9 @@ library(ggplot2)
 library(RColorBrewer)
 ```
 
+---
+```{r, eval=TRUE, echo=FALSE, results='hide', warning=FALSE}
 
-```{r}
 #cristy
 all_movies <- read.csv("/Users/cristyreynolds/Desktop/DataScience2401/Final_Project/IMDbmovies.csv", stringsAsFactors = FALSE) 
 
@@ -43,26 +43,39 @@ write.csv(movies, "movies.csv")
  
 ```
 
-
+# Looking at our filtered data frame
 ```{r}
 
 head(movies)
-
-by_genre <- movies %>% group_by(genre) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration) )
-
-
-movies %>% filter(genre == "Action") %>%
-  summarise(maxRunTime = max(duration), avgRunTime = mean(duration))
+colnames(movies)
 
 ```
-Now we need to categorize each complex sub-genre into one of nine major genres. We will start by using a for loop and "startswith"
-
+# Looking at data grouped by genre and setting columns to look at max runtime and avg runtime
 ```{r}
 
+by_genre <- movies %>%
+  group_by(genre) %>% 
+  summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
 
+head(by_genre)
+
+#movies %>% 
+  #filter(genre == "Action") %>%
+  #summarise(maxRunTime = max(duration), avgRunTime = mean(duration))
+
+```
+Here is where we noticed that we needed to clean up the genre catetory and set a "Main Genre" 
+
+---
+
+We need to categorize each complex sub-genre into one of nine major genres. We will start by using a for loop and "startswith"
+
+```{r, echo=TRUE}
+
+#splitting the genre column by ","
 movies$subgenre <- str_split(movies$genre, "[,]", simplify = TRUE) [,1]
 
-
+#now creating the 9 major genres
 movie_genre <- movies$subgenre
 
 no_animation <- gsub("Animation", "Family", movie_genre)
@@ -82,12 +95,18 @@ music <- gsub("music", "Musical", action)
 
 fixed_movies <- gsub("Sci-fi/fantasy", "Sci-Fi/Fantasy", music)
 
+```
 
+## Here are the new genres
+```{r}
 
 unique(fixed_movies)
 movies$Genre <- fixed_movies
 
+```
 
+
+```{r}
 new_movies <- movies %>% filter(Genre != "Documentary") %>% select(original_title, year, Genre, duration, votes)
 #unique(new_movies$Genre)
 #new_movies %>% arrange(desc(duration))
@@ -95,6 +114,8 @@ new_movies <- movies %>% filter(Genre != "Documentary") %>% select(original_titl
 write.csv(new_movies, "filtered_movies.csv")
 
 ```
+
+# Created time increments
 ```{r}
 
 new_movies$time_increment = 0
@@ -109,7 +130,10 @@ new_movies$time_increment[new_movies$duration > 180 & new_movies$duration <= 240
 new_movies$time_increment[new_movies$duration > 240 & new_movies$duration <= 300] = 300
 new_movies$time_increment[new_movies$duration > 300 & new_movies$duration <= 360] = 360
 new_movies$time_increment[new_movies$duration > 360 & new_movies$duration <= 420] = 420
+```
 
+
+```{r}
 new_movies %>% group_by(time_increment) %>% 
   summarise (count = n()) %>%
   ggplot(aes(x = time_increment, y = count)) + geom_col()
@@ -119,18 +143,26 @@ new_movies %>% group_by(time_increment) %>%
   ggplot(aes(x = time_increment, y = count)) + geom_col() +
   coord_cartesian(ylim=c(0,800))
 
+```
 
 
+---
+
+## Run Time of Movies in Each Genre
+
+```{r , results='hide', warning=FALSE}
+##Run Time of Movies in Each Genre, 
+
+genre_only <- new_movies %>% 
+  group_by(Genre, time_increment) %>% 
+  summarise(count = n())
 
 ```
 
-##Run Time of Movies in Each Genre, 
+```{r ,fig.align="center", echo = FALSE,fig.width = 20, fig.height = 5}
 
-```{r fig.align="center", echo = FALSE,fig.width = 20, fig.height = 5}
-##Run Time of Movies in Each Genre, 
-
-genre_only <- new_movies %>% group_by(Genre, time_increment) %>% summarise(count = n())
-genre_only %>% ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment))) +
+genre_only %>% 
+  ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment))) +
   geom_col(position = "fill") + 
   scale_fill_brewer(palette="Paired", name = "Runtime",
                     breaks = c("60", "75", "90", "120", "150", "180", "240", "300", "360", 
@@ -140,12 +172,24 @@ genre_only %>% ggplot(aes(x = Genre, y = count , fill = as.factor(time_increment
   labs(y = "Percent of Movies", title = "Proportion of Movies\nby Time and Genre\n") +
   theme(plot.title = element_text(hjust = 0.5))
 ```
-Let's take a look at the longest and shortest movies
-```{r fig.width = 12, fig.height = 4}
+
+---
+
+
+## Let's take a look at the longest and shortest movies
+
+
+```{r, results='hide'}
 longest = nrow(new_movies)
 tenth_longest = longest-10
 longest
 tenth_longest
+```
+
+
+
+```{r, fig.width = 12, fig.height = 4, results='hide'}
+#
 new_movies %>%
   arrange(duration) %>% 
   slice(1:10) %>%
@@ -168,7 +212,12 @@ new_movies %>%
 
 ```
 
-##BOX PLOT!!!
+--- 
+
+
+BOX PLOT!!!
+
+
 ```{r fig.width = 20, fig.height = 12}
 
 ##Good plot
@@ -185,16 +234,21 @@ new_movies %>% ggplot(aes(x = as.factor(year), y = duration, fill = as.factor(ye
 
 ```
 
+---
 
-```{r}
 
-new_movies %>% group_by(year, Genre) %>% 
+```{r, echo=FALSE, message=FALSE}
+new_movies %>% 
+  group_by(year, Genre) %>% 
   summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
 ```
+
 
 ```{r}
 head(new_movies)
 ```
+
+
 Wasnt sure what your were trying to do here
 ```{r}
 #mean_runtime %>% ggplot(aes(x = year, y = avgRunTime, color = Genre)) + 
@@ -204,38 +258,58 @@ Wasnt sure what your were trying to do here
   #coord_cartesian(ylim=c(40,125)) 
 ```
 
-```{r}
+```{r, echo=FALSE}
 
-new_movies %>% group_by(year) %>% summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
+new_movies %>% 
+  group_by(year) %>% 
+  summarise(count = n(), maxRunTime = max(duration), avgRunTime = mean(duration))
 
 ```
 
 
 ```{r}
 
-over_2 <- new_movies %>% filter(duration > 120) %>% group_by(year) %>% summarise(count = n()) 
-total_count <- new_movies %>% group_by(year) %>% summarise(count = n())
+over_2 <- new_movies %>% 
+  filter(duration > 120) %>% 
+  group_by(year) %>% 
+  summarise(count = n()) 
+
+total_count <- new_movies %>% 
+  group_by(year) %>% 
+  summarise(count = n())
+
 over_2$pct <- round((over_2$count/total_count$count) * 100, 1)
 
+```
 
-over_2
-total_count
+```{r, echo=FALSE}
+#over_2
+#total_count
+```
 
-over_2 %>% ggplot(aes(x = year, y = count)) +
+
+---
+
+## Plots
+
+```{r, echo=FALSE}
+
+over_2 %>% 
+  ggplot(aes(x = year, y = count)) +
   geom_col()
-over_2 %>% ggplot(aes(x = year, y = pct)) +
-  geom_col()
 
-new_movies
+
+over_2 %>% 
+  ggplot(aes(x = year, y = pct)) +
+  geom_col()
+```
+
+
+```{r, echo=FALSE}
+#new_movies
 
 ```
 
-Would you think that the length of a movie might affect how well it's loved by the public? Let's look at the data. 
 
-```{r}
 
-```
-
-The data shows that most movies, regardless of rating, sit in the sweet spot of  around 90 minutes, regardless of genre, and are liked based on quality, not quantity
-![Ebert](ebert.jpg)
 
